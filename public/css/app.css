@@ -1,0 +1,130 @@
+/* ===== Presensi & Logbook Magang — gaya sederhana, modern, responsif ===== */
+:root{
+  --bg:#f4f6fb; --card:#ffffff; --ink:#1b2437; --muted:#6b7488; --line:#e3e8f2;
+  --brand:#0b6bcb; --brand-ink:#ffffff; --brand-soft:#e7f1fd; --nav:#0f2744; --nav-ink:#cfdcf0;
+  --ok:#0f9d58; --ok-soft:#e3f6ec; --warn:#c77700; --warn-soft:#fff3dc; --bad:#d93025; --bad-soft:#fde8e6;
+  --radius:14px; --shadow:0 1px 2px rgba(16,24,40,.06),0 4px 14px rgba(16,24,40,.06);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:Inter,"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+h1{font-size:1.5rem;margin:0 0 .25rem}
+h2{font-size:1.1rem;margin:0}
+.muted{color:var(--muted)}
+.small{font-size:.85rem}
+
+/* layout */
+.app{display:grid;grid-template-columns:250px 1fr;min-height:100vh}
+.sidebar{background:var(--nav);color:var(--nav-ink);padding:20px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:18px}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 8px;color:#fff}
+.brand img{width:42px;height:auto;background:#fff;border-radius:10px;padding:4px}
+.brand b{display:block;font-size:1rem;line-height:1.15}
+.brand span{font-size:.75rem;color:#9db3d3}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav a{display:flex;align-items:center;gap:10px;color:var(--nav-ink);padding:10px 12px;border-radius:10px;font-weight:500}
+.nav a:hover{background:rgba(255,255,255,.08);text-decoration:none}
+.nav a.active{background:var(--brand);color:#fff}
+.nav svg{width:18px;height:18px;flex:none}
+.sidebar-foot{margin-top:auto;font-size:.75rem;color:#8ea5c6;padding:0 8px}
+.main{padding:26px clamp(16px,3vw,36px) 48px;min-width:0}
+.topbar{display:none}
+.page-head{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;margin-bottom:20px}
+
+/* komponen */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+.card + .card{margin-top:18px}
+.card-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.grid{display:grid;gap:16px}
+.stats{grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin-bottom:18px}
+.two{grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+.stat{display:flex;gap:14px;align-items:center}
+.stat .ico{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;background:var(--brand-soft);color:var(--brand);flex:none}
+.stat .ico svg{width:22px;height:22px}
+.stat .num{font-size:1.7rem;font-weight:700;line-height:1}
+.stat .lbl{color:var(--muted);font-size:.85rem;margin-top:4px}
+.stat.ok .ico{background:var(--ok-soft);color:var(--ok)}
+.stat.warn .ico{background:var(--warn-soft);color:var(--warn)}
+
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:9px 14px;border-radius:10px;font:inherit;font-weight:600;cursor:pointer;text-decoration:none;line-height:1.2}
+.btn:hover{background:#f1f4fa;text-decoration:none}
+.btn svg{width:16px;height:16px}
+.btn-primary{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.btn-primary:hover{background:#0958a8}
+.btn-danger{color:var(--bad);border-color:#f4c7c3}
+.btn-danger:hover{background:var(--bad-soft)}
+.btn-sm{padding:6px 10px;font-size:.85rem}
+.btn-xlsx{color:#107c41;border-color:#bfe3cd}.btn-xlsx:hover{background:#e8f6ee}
+.btn-word{color:#185abd;border-color:#c3d6f5}.btn-word:hover{background:#e8f0fc}
+.btn-pdf{color:#c0392b;border-color:#f1c6c1}.btn-pdf:hover{background:#fdecea}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.78rem;font-weight:600;background:var(--brand-soft);color:var(--brand)}
+.badge.ok{background:var(--ok-soft);color:var(--ok)}
+.badge.warn{background:var(--warn-soft);color:var(--warn)}
+.badge.bad{background:var(--bad-soft);color:var(--bad)}
+
+.alert{padding:12px 16px;border-radius:12px;margin-bottom:16px;border:1px solid}
+.alert-success{background:var(--ok-soft);border-color:#b7e2c9;color:#0b6b3a}
+.alert-error{background:var(--bad-soft);border-color:#f4c7c3;color:#9f1c14}
+.alert-info{background:var(--brand-soft);border-color:#c3dbf7;color:#0a4b91}
+.alert ul{margin:6px 0 0 18px;padding:0}
+
+/* tabel */
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.data{width:100%;border-collapse:collapse}
+table.data th,table.data td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+table.data th{font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);background:#f8fafd;white-space:nowrap}
+table.data tr:hover td{background:#fafcff}
+td.nowrap{white-space:nowrap}
+.empty{padding:26px;text-align:center;color:var(--muted)}
+
+/* grid presensi mingguan (mirip template Excel) */
+table.rekap{border-collapse:collapse;width:100%;min-width:860px;font-size:.85rem}
+table.rekap th,table.rekap td{border:1px solid #9aa6bd;padding:6px 4px;text-align:center}
+table.rekap thead th{background:#eef3fb;font-weight:700}
+table.rekap td.wk{font-weight:700;background:#f8fafd;width:56px}
+table.rekap td.cell-empty{background:#fcfcfd}
+table.rekap td.warn-cell{background:var(--warn-soft)}
+table.rekap td a{color:inherit}
+
+/* form */
+.form{display:grid;gap:16px;max-width:760px}
+.form.wide{max-width:none}
+.fields{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.field label{display:block;font-weight:600;margin-bottom:6px}
+.field .req{color:var(--bad)}
+.field input,.field textarea,.field select{width:100%;padding:10px 12px;border:1px solid #cdd5e4;border-radius:10px;font:inherit;background:#fff;color:var(--ink)}
+.field textarea{min-height:150px;resize:vertical}
+.field input:focus,.field textarea:focus,.field select:focus{outline:2px solid #9ec5f2;border-color:var(--brand)}
+.field .err{color:var(--bad);font-size:.85rem;margin-top:5px}
+.field.has-error input,.field.has-error textarea{border-color:var(--bad)}
+.hint{font-size:.85rem;margin-top:6px;color:var(--muted)}
+.hint.bad{color:var(--bad)}
+.fieldset-title{font-weight:700;margin:6px 0 -4px;padding-top:10px;border-top:1px dashed var(--line)}
+.fieldset-title:first-child{border-top:0;padding-top:0}
+
+/* daftar logbook per minggu */
+.week-head{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center}
+.log-item{display:grid;grid-template-columns:170px 1fr auto;gap:14px;padding:14px 0;border-top:1px solid var(--line)}
+.log-item .date b{display:block}
+.log-item .text{white-space:pre-line;overflow-wrap:anywhere}
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.filters .field{min-width:180px}
+
+/* responsif */
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+  .sidebar{position:fixed;inset:0 auto 0 0;width:260px;z-index:30;transform:translateX(-100%);transition:transform .2s;height:100vh}
+  body.nav-open .sidebar{transform:none;box-shadow:0 0 0 100vmax rgba(10,20,40,.45)}
+  .topbar{display:flex;align-items:center;gap:12px;background:var(--nav);color:#fff;padding:10px 14px;position:sticky;top:0;z-index:20}
+  .topbar button{background:rgba(255,255,255,.12);border:0;color:#fff;border-radius:10px;padding:8px 10px;cursor:pointer}
+  .topbar img{height:30px;background:#fff;border-radius:8px;padding:3px}
+  .log-item{grid-template-columns:1fr}
+}
+@media (max-width:520px){
+  .main{padding:16px 12px 40px}
+  .card{padding:16px}
+  .actions .btn{flex:1 1 auto;justify-content:center}
+}
