@@ -29,7 +29,7 @@
             <a href="{{ route('profil.edit') }}" class="{{ request()->routeIs('profil.*') ? 'active' : '' }}">@include('partials.icon', ['name' => 'user']) Profil</a>
         </nav>
 
-        <div class="sidebar-foot">Format export mengacu pada template Presensi (Excel) &amp; Logbook (Word) Magang.</div>
+        <div class="sidebar-foot">Aplikasi Web Elsya Cantik</div>
     </aside>
 
     <main class="main">

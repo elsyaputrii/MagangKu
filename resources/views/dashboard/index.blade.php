@@ -49,20 +49,45 @@
     </div>
 </div>
 
+@php $f = $ringkasan['filter']; @endphp
+
+<form method="GET" action="{{ route('dashboard') }}" class="card filters" style="margin-bottom:16px">
+    <div class="field">
+        <label for="bulan">Bulan</label>
+        <input type="month" id="bulan" name="bulan" value="{{ $f['bulan'] }}"
+               onchange="var m=this.form.querySelector('[name=minggu]'); if(m){m.disabled=true;} this.form.submit();">
+    </div>
+    <div class="field">
+        <label for="minggu">Minggu</label>
+        <select id="minggu" name="minggu" onchange="this.form.submit()">
+            @foreach ($f['pilihan'] as $n => $label)
+                <option value="{{ $n }}" @selected($n === $f['minggu'])>{{ $label }}</option>
+            @endforeach
+        </select>
+    </div>
+    <div class="muted small" style="padding-bottom:10px">
+        Menampilkan <b>M{{ $f['minggu'] }} {{ $f['nama_bulan'] }}</b> ({{ $f['rentang'] }})
+        @if ($f['minggu_ini']) <span class="badge ok">Minggu ini</span> @endif
+    </div>
+</form>
+
 <div class="grid two">
     <section class="card">
         <div class="card-head">
-            <h2>Presensi terbaru</h2>
-            <a class="btn btn-sm" href="{{ route('presensi.index') }}">Lihat semua</a>
+            <h2>Presensi · M{{ $f['minggu'] }} {{ $f['nama_bulan'] }}</h2>
+            <a class="btn btn-sm" href="{{ route('presensi.index', ['bulan' => $f['bulan']]) }}">Lihat semua</a>
         </div>
-        @if ($ringkasan['presensi_terbaru']->isEmpty())
-            <div class="empty">Belum ada presensi. <a href="{{ route('presensi.create') }}">Tambah presensi</a></div>
+        @if ($ringkasan['presensi_minggu']->isEmpty())
+            <div class="empty">
+                Belum ada presensi pada minggu ini.
+                @if ($f['minggu_ini']) <a href="{{ route('presensi.create') }}">Tambah presensi</a> @endif
+            </div>
         @else
             <div class="table-wrap">
                 <table class="data">
                     <thead><tr><th>Tanggal</th><th>Datang</th><th>Pulang</th><th>Durasi</th></tr></thead>
                     <tbody>
-                    @foreach ($ringkasan['presensi_terbaru'] as $p)
+                    @foreach ($ringkasan['presensi_minggu'] as $p)
                         <tr>
                             <td>{{ WeekHelper::namaHari($p->tanggal) }}, {{ $p->tanggal->format('d/m/Y') }}</td>
                             <td>{{ $p->jam_datang_template }}</td>
@@ -81,16 +106,19 @@
 
     <section class="card">
         <div class="card-head">
-            <h2>Kegiatan logbook terbaru</h2>
+            <h2>Logbook · M{{ $f['minggu'] }} {{ $f['nama_bulan'] }}</h2>
             <a class="btn btn-sm" href="{{ route('logbook.index') }}">Lihat semua</a>
         </div>
-        @forelse ($ringkasan['logbook_terbaru'] as $l)
+        @forelse ($ringkasan['logbook_minggu'] as $l)
             <div style="padding:10px 0;border-top:1px solid var(--line)">
                 <b>{{ WeekHelper::namaHari($l->tanggal) }}, {{ $l->tanggal->format('d/m/Y') }}</b>
                 <div class="muted small">{{ \Illuminate\Support\Str::limit($l->uraian, 140) }}</div>
             </div>
         @empty
-            <div class="empty">Belum ada kegiatan. <a href="{{ route('logbook.create') }}">Tambah logbook</a></div>
+            <div class="empty">
+                Belum ada kegiatan pada minggu ini.
+                @if ($f['minggu_ini']) <a href="{{ route('logbook.create') }}">Tambah logbook</a> @endif
+            </div>
         @endforelse
     </section>
 </div>
