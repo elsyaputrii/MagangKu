@@ -49,7 +49,7 @@
                     <td class="wk">{{ $romawi[$minggu] }}</td>
                     @foreach ($hariHari as $p)
                         @if ($p)
-                            <td class="{{ $p->kurang_jam ? 'warn-cell' : '' }}"><a href="{{ route('presensi.edit', $p) }}" title="Ubah">{{ $p->tanggal->format('j/n/Y') }}</a></td>
+                            <td class="{{ $p->kurang_jam ? 'warn-cell' : '' }}"><a href="{{ route('presensi.edit', $p) }}" title="Ubah">{{ $p->tanggal->format('d/m/y') }}</a></td>
                             <td class="{{ $p->kurang_jam ? 'warn-cell' : '' }}">{{ $p->jam_datang_template }}</td>
                             <td class="{{ $p->kurang_jam ? 'warn-cell' : '' }}">{{ $p->jam_pulang_template }}</td>
                         @else
@@ -78,7 +78,7 @@
                 <tbody>
                 @foreach ($records as $p)
                     <tr>
-                        <td class="nowrap">{{ WeekHelper::namaHari($p->tanggal) }}, {{ $p->tanggal->format('d/m/Y') }}</td>
+                        <td class="nowrap">{{ WeekHelper::namaHari($p->tanggal) }}, {{ $p->tanggal->format('d/m/y') }}</td>
                         <td>{{ $romawi[WeekHelper::weekOfMonth($p->tanggal)] ?? '-' }}</td>
                         <td>{{ $p->jam_datang_template }}</td>
                         <td>{{ $p->jam_pulang_template ?: '-' }}</td>
@@ -95,7 +95,7 @@
                         <td class="nowrap">
                             <div class="actions">
                                 <a class="btn btn-sm" href="{{ route('presensi.edit', $p) }}">@include('partials.icon', ['name' => 'edit']) Ubah</a>
-                                <form method="POST" action="{{ route('presensi.destroy', $p) }}" data-confirm="Hapus presensi tanggal {{ $p->tanggal->format('d/m/Y') }}?">
+                                <form method="POST" action="{{ route('presensi.destroy', $p) }}" data-confirm="Hapus presensi tanggal {{ $p->tanggal->format('d/m/y') }}?">
                                     @csrf @method('DELETE')
                                     <button class="btn btn-sm btn-danger" type="submit">@include('partials.icon', ['name' => 'trash']) Hapus</button>
                                 </form>

@@ -89,7 +89,7 @@
                     <tbody>
                     @foreach ($ringkasan['presensi_minggu'] as $p)
                         <tr>
-                            <td>{{ WeekHelper::namaHari($p->tanggal) }}, {{ $p->tanggal->format('d/m/Y') }}</td>
+                            <td>{{ WeekHelper::namaHari($p->tanggal) }}, {{ $p->tanggal->format('d/m/y') }}</td>
                             <td>{{ $p->jam_datang_template }}</td>
                             <td>{{ $p->jam_pulang_template ?: '-' }}</td>
                             <td>
