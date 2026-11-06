@@ -42,7 +42,7 @@ class PresensiController extends Controller
 
         return redirect()
             ->route('presensi.index', ['bulan' => $presensi->tanggal->format('Y-m')])
-            ->with('success', 'Presensi tanggal ' . WeekHelper::tanggalIndo($presensi->tanggal) . ' berhasil disimpan.');
+            ->with('success', 'Presensi tanggal ' . WeekHelper::tanggalIndo($presensi->tanggal) . ' berhasil disimpan.' . $this->catatanLogbook($presensi));
     }
 
     public function edit(Presensi $presensi)
@@ -56,7 +56,7 @@ class PresensiController extends Controller
 
         return redirect()
             ->route('presensi.index', ['bulan' => $presensi->tanggal->format('Y-m')])
-            ->with('success', 'Presensi berhasil diperbarui.');
+            ->with('success', 'Presensi berhasil diperbarui.' . $this->catatanLogbook($presensi));
     }
 
     public function destroy(Presensi $presensi)
@@ -67,5 +67,17 @@ class PresensiController extends Controller
         return redirect()
             ->route('presensi.index', ['bulan' => $bulan])
             ->with('success', 'Presensi berhasil dihapus.');
+    }
+
+    /** Catatan singkat tentang logbook otomatis untuk hari izin/sakit. */
+    private function catatanLogbook(Presensi $presensi): string
+    {
+        if ($presensi->status === 'hadir') {
+            return '';
+        }
+
+        return $this->service->logbookDilewati
+            ? ' Logbook tanggal ini sudah Anda tulis sendiri, jadi tidak diubah.'
+            : ' Logbook tanggal ini terisi otomatis.';
     }
 }

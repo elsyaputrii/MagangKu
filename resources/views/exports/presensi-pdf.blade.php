@@ -74,7 +74,10 @@
         <tr>
             <td class="wk">{{ $romawi[$minggu] }}</td>
             @foreach ($hariHari as $p)
-                @if ($p)
+                @if ($p && ! $p->hadir)
+                    <td>{{ $p->tanggal->format('j/n/Y') }}</td>
+                    <td colspan="2" style="font-weight:bold;">{{ strtoupper($p->status) }}</td>
+                @elseif ($p)
                     <td>{{ $p->tanggal->format('j/n/Y') }}</td>
                     <td>{{ $p->jam_datang_template }}</td>
                     <td>{{ $p->jam_pulang_template }}</td>

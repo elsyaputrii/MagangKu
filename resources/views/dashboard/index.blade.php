@@ -3,6 +3,7 @@
 
 @section('content')
 @use('App\Support\WeekHelper')
+@include('partials.status-style')
 
 <div class="page-head">
     <div>
@@ -35,6 +36,10 @@
     <div class="card stat">
         <div class="ico">@include('partials.icon', ['name' => 'file'])</div>
         <div><div class="num">{{ $ringkasan['logbook_minggu_ini'] }}</div><div class="lbl">Logbook minggu ini ({{ $ringkasan['logbook_minggu_total'] }} minggu tercatat)</div></div>
+    </div>
+    <div class="card stat">
+        <div class="ico">@include('partials.icon', ['name' => 'user'])</div>
+        <div><div class="num">{{ $ringkasan['presensi_izin_sakit'] }}</div><div class="lbl">Hari izin / sakit</div></div>
     </div>
     <div class="card stat warn">
         <div class="ico">@include('partials.icon', ['name' => 'alert'])</div>
@@ -90,10 +95,14 @@
                     @foreach ($ringkasan['presensi_minggu'] as $p)
                         <tr>
                             <td>{{ WeekHelper::namaHari($p->tanggal) }}, {{ $p->tanggal->format('d/m/y') }}</td>
-                            <td>{{ $p->jam_datang_template }}</td>
+                            <td>{{ $p->hadir ? $p->jam_datang_template : '-' }}</td>
                             <td>{{ $p->jam_pulang_template ?: '-' }}</td>
                             <td>
-                                {{ $p->durasi_teks }}
+                                @if (! $p->hadir)
+                                    <span class="badge {{ $p->status }}">{{ $p->status_label }}</span>
+                                @else
+                                    {{ $p->durasi_teks }}
+                                @endif
                                 @if ($p->kurang_jam) <span class="badge warn">&lt; {{ config('magang.min_jam_kerja') }} jam</span> @endif
                             </td>
                         </tr>

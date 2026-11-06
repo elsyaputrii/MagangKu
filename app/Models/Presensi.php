@@ -10,7 +10,7 @@ class Presensi extends Model
 {
     protected $table = 'presensis';
 
-    protected $fillable = ['tanggal', 'jam_datang', 'jam_pulang'];
+    protected $fillable = ['tanggal', 'status', 'jam_datang', 'jam_pulang', 'keterangan'];
 
     protected $casts = [
         'tanggal' => 'date',
@@ -19,6 +19,17 @@ class Presensi extends Model
     public function scopeBulan(Builder $query, int $tahun, int $bulan): Builder
     {
         return $query->whereYear('tanggal', $tahun)->whereMonth('tanggal', $bulan);
+    }
+
+    /** True bila hadir (bukan izin/sakit). */
+    public function getHadirAttribute(): bool
+    {
+        return ($this->status ?? 'hadir') === 'hadir';
+    }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return ucfirst($this->status ?? 'hadir');
     }
 
     /** Jam datang format "08.00" (gaya template). */
@@ -46,7 +57,7 @@ class Presensi extends Model
     /** Durasi kerja dalam menit; null jika belum pulang. */
     public function getDurasiMenitAttribute(): ?int
     {
-        if (! $this->jam_pulang) {
+        if (! $this->jam_pulang || ! $this->jam_datang) {
             return null;
         }
 

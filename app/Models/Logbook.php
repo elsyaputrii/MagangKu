@@ -6,9 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Logbook extends Model
 {
-    protected $fillable = ['tanggal', 'uraian'];
+    protected $fillable = ['tanggal', 'uraian', 'otomatis'];
 
     protected $casts = [
-        'tanggal' => 'date',
+        'tanggal'  => 'date',
+        'otomatis' => 'boolean',
     ];
 }

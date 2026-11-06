@@ -43,9 +43,10 @@ class DashboardService
         return [
             'presensi_total'        => $semuaPresensi->count(),
             'presensi_bulan_ini'    => $bulanIni->count(),
+            'presensi_izin_sakit'   => $semuaPresensi->filter(fn (Presensi $p) => ! $p->hadir)->count(),
             'presensi_kurang_jam'   => $semuaPresensi->filter(fn (Presensi $p) => $p->kurang_jam)->count(),
             'presensi_belum_pulang' => $semuaPresensi->filter(
-                fn (Presensi $p) => $p->jam_pulang === null && ! $p->tanggal->isSameDay($hariIni)
+                fn (Presensi $p) => $p->hadir && $p->jam_pulang === null && ! $p->tanggal->isSameDay($hariIni)
             )->count(),
 
             'logbook_total'        => Logbook::count(),

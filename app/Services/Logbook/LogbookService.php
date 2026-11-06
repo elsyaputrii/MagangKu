@@ -63,6 +63,8 @@ class LogbookService
 
     public function update(Logbook $logbook, array $data): Logbook
     {
+        // Setelah diedit manual, uraian dianggap tulisan sendiri (tidak ditimpa otomatis lagi)
+        $data['otomatis'] = false;
         $logbook->update($data);
 
         return $logbook->refresh();
@@ -71,6 +73,59 @@ class LogbookService
     public function delete(Logbook $logbook): void
     {
         $logbook->delete();
+    }
+
+    /**
+     * Isi logbook otomatis untuk hari izin/sakit.
+     * Return false bila logbook tanggal itu sudah ditulis manual (tidak ditimpa).
+     */
+    public function isiOtomatisAbsen(Carbon $tanggal, string $status, ?string $keterangan): bool
+    {
+        $tanggalStr = $tanggal->toDateString();
+        $logbook = Logbook::query()->whereDate('tanggal', $tanggalStr)->first();
+
+        if ($logbook && ! $logbook->otomatis) {
+            return false;
+        }
+
+        $data = ['uraian' => $this->uraianAbsen($status, $keterangan), 'otomatis' => true];
+
+        if ($logbook) {
+            $logbook->update($data);
+        } else {
+            Logbook::create($data + ['tanggal' => $tanggalStr]);
+        }
+
+        return true;
+    }
+
+    /** Hapus logbook otomatis (izin/sakit) pada tanggal tsb; logbook tulisan sendiri aman. */
+    public function hapusOtomatis(Carbon $tanggal): void
+    {
+        Logbook::query()
+            ->whereDate('tanggal', $tanggal->toDateString())
+            ->where('otomatis', true)
+            ->delete();
+    }
+
+    /**
+     * Uraian logbook untuk hari izin/sakit.
+     * - Keterangan diisi  -> dipakai apa adanya (huruf awal dibesarkan, diakhiri titik).
+     * - Keterangan kosong -> kalimat standar.
+     */
+    public function uraianAbsen(string $status, ?string $keterangan): string
+    {
+        $teks = trim((string) $keterangan);
+
+        if ($teks !== '') {
+            $teks = mb_strtoupper(mb_substr($teks, 0, 1)) . mb_substr($teks, 1);
+
+            return preg_match('/[.!?]$/u', $teks) ? $teks : $teks . '.';
+        }
+
+        return $status === 'sakit'
+            ? 'Tidak masuk magang karena sakit.'
+            : 'Izin tidak masuk magang.';
     }
 
     public function defaultTanggal(): Carbon

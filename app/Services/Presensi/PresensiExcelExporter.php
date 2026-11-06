@@ -54,6 +54,14 @@ class PresensiExcelExporter
             $kolom = 2 + 3 * $hari;
 
             $this->sel($ws, $kolom, $baris, $presensi->tanggal->format('j/n/Y'));
+
+            // Izin/sakit: tulis status pada sel Masuk+Pulang yang digabung
+            if (! $presensi->hadir) {
+                $this->sel($ws, $kolom + 1, $baris, mb_strtoupper($presensi->status));
+                $ws->mergeCells([$kolom + 1, $baris, $kolom + 2, $baris]);
+                continue;
+            }
+
             $this->sel($ws, $kolom + 1, $baris, $presensi->jam_datang_template);
             $this->sel($ws, $kolom + 2, $baris, $presensi->jam_pulang_template);
         }

@@ -3,12 +3,20 @@
 namespace App\Services\Presensi;
 
 use App\Models\Presensi;
+use App\Services\Logbook\LogbookService;
 use App\Support\WeekHelper;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
 class PresensiService
 {
+    /** True bila logbook tanggal itu sudah ditulis manual sehingga tidak ditimpa otomatis. */
+    public bool $logbookDilewati = false;
+
+    public function __construct(private readonly LogbookService $logbook)
+    {
+    }
+
     /** Ubah "YYYY-MM" menjadi [tahun, bulan]; default bulan berjalan. */
     public function parseBulan(?string $bulan): array
     {
@@ -51,18 +59,32 @@ class PresensiService
 
     public function create(array $data): Presensi
     {
-        return Presensi::create($data);
+        $presensi = Presensi::create($this->normalisasi($data));
+        $this->sinkronLogbook($presensi);
+
+        return $presensi;
     }
 
     public function update(Presensi $presensi, array $data): Presensi
     {
-        $presensi->update($data);
+        $tanggalLama = $presensi->tanggal->copy();
 
-        return $presensi->refresh();
+        $presensi->update($this->normalisasi($data));
+        $presensi->refresh();
+
+        // Jika tanggal dipindah, logbook otomatis di tanggal lama ikut dibersihkan
+        if (! $tanggalLama->isSameDay($presensi->tanggal)) {
+            $this->logbook->hapusOtomatis($tanggalLama);
+        }
+
+        $this->sinkronLogbook($presensi);
+
+        return $presensi;
     }
 
     public function delete(Presensi $presensi): void
     {
+        $this->logbook->hapusOtomatis($presensi->tanggal);
         $presensi->delete();
     }
 
@@ -72,5 +94,39 @@ class PresensiService
         $hariIni = Carbon::today();
 
         return $hariIni->isWeekend() ? $hariIni->copy()->previousWeekday() : $hariIni;
+    }
+
+    /** Rapikan data sesuai status: hadir tanpa keterangan; izin/sakit tanpa jam. */
+    private function normalisasi(array $data): array
+    {
+        $data['status'] = $data['status'] ?? 'hadir';
+
+        if ($data['status'] === 'hadir') {
+            $data['keterangan'] = null;
+        } else {
+            $data['jam_datang'] = null;
+            $data['jam_pulang'] = null;
+            $data['keterangan'] = isset($data['keterangan']) ? trim((string) $data['keterangan']) ?: null : null;
+        }
+
+        return $data;
+    }
+
+    /** Izin/sakit -> isi logbook otomatis. Hadir -> hapus logbook otomatis (jika ada). */
+    private function sinkronLogbook(Presensi $presensi): void
+    {
+        $this->logbookDilewati = false;
+
+        if ($presensi->status === 'hadir') {
+            $this->logbook->hapusOtomatis($presensi->tanggal);
+
+            return;
+        }
+
+        $this->logbookDilewati = ! $this->logbook->isiOtomatisAbsen(
+            $presensi->tanggal,
+            $presensi->status,
+            $presensi->keterangan
+        );
     }
 }

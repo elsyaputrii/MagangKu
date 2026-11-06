@@ -31,7 +31,7 @@
         <div style="margin-top:12px">
             @foreach ($m['items'] as $l)
                 <div class="log-item">
-                    <div class="date"><b>{{ WeekHelper::namaHari($l->tanggal) }}</b><span class="muted">{{ $l->tanggal->format('d / m / Y') }}</span></div>
+                    <div class="date"><b>{{ WeekHelper::namaHari($l->tanggal) }}</b><span class="muted">{{ $l->tanggal->format('d / m / Y') }}</span>@if ($l->otomatis)<span class="badge" style="margin-top:6px;width:max-content">Otomatis</span>@endif</div>
                     <div class="text">{{ $l->uraian }}</div>
                     <div class="actions" style="align-items:flex-start">
                         <a class="btn btn-sm" href="{{ route('logbook.edit', $l) }}">@include('partials.icon', ['name' => 'edit']) Ubah</a>

@@ -3,6 +3,7 @@
 
 @section('content')
 @use('App\Support\WeekHelper')
+@include('partials.status-style')
 @php $hariKerja = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat']; @endphp
 
 <div class="page-head">
@@ -48,7 +49,10 @@
                 <tr>
                     <td class="wk">{{ $romawi[$minggu] }}</td>
                     @foreach ($hariHari as $p)
-                        @if ($p)
+                        @if ($p && ! $p->hadir)
+                            <td class="st-{{ $p->status }}"><a href="{{ route('presensi.edit', $p) }}" title="Ubah">{{ $p->tanggal->format('d/m/y') }}</a></td>
+                            <td colspan="2" class="st-{{ $p->status }}" title="{{ $p->keterangan }}">{{ strtoupper($p->status) }}</td>
+                        @elseif ($p)
                             <td class="{{ $p->kurang_jam ? 'warn-cell' : '' }}"><a href="{{ route('presensi.edit', $p) }}" title="Ubah">{{ $p->tanggal->format('d/m/y') }}</a></td>
                             <td class="{{ $p->kurang_jam ? 'warn-cell' : '' }}">{{ $p->jam_datang_template }}</td>
                             <td class="{{ $p->kurang_jam ? 'warn-cell' : '' }}">{{ $p->jam_pulang_template }}</td>
@@ -80,11 +84,14 @@
                     <tr>
                         <td class="nowrap">{{ WeekHelper::namaHari($p->tanggal) }}, {{ $p->tanggal->format('d/m/y') }}</td>
                         <td>{{ $romawi[WeekHelper::weekOfMonth($p->tanggal)] ?? '-' }}</td>
-                        <td>{{ $p->jam_datang_template }}</td>
+                        <td>{{ $p->hadir ? $p->jam_datang_template : '-' }}</td>
                         <td>{{ $p->jam_pulang_template ?: '-' }}</td>
                         <td class="nowrap">{{ $p->durasi_teks }}</td>
                         <td>
-                            @if ($p->jam_pulang === null)
+                            @if (! $p->hadir)
+                                <span class="badge {{ $p->status }}">{{ $p->status_label }}</span>
+                                @if ($p->keterangan)<div class="muted small">{{ $p->keterangan }}</div>@endif
+                            @elseif ($p->jam_pulang === null)
                                 <span class="badge warn">Belum pulang</span>
                             @elseif ($p->kurang_jam)
                                 <span class="badge warn">&lt; {{ config('magang.min_jam_kerja') }} jam</span>
