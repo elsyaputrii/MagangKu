@@ -8,6 +8,7 @@ use App\Models\Logbook;
 use App\Services\Logbook\LogbookService;
 use App\Services\Profil\ProfilService;
 use App\Support\WeekHelper;
+use Illuminate\Http\Request;
 
 class LogbookController extends Controller
 {
@@ -17,10 +18,16 @@ class LogbookController extends Controller
     ) {
     }
 
-    public function index()
+    public function index(Request $request)
     {
+        [$tahun, $bulan] = WeekHelper::parseBulan($request->query('bulan'));
+        $profil = $this->profil->get();
+
         return view('logbook.index', [
-            'minggu' => $this->service->groupedByWeek($this->profil->get()),
+            'bulan'           => sprintf('%04d-%02d', $tahun, $bulan),
+            'namaBulan'       => WeekHelper::namaBulan($bulan) . ' ' . $tahun,
+            'minggu'          => $this->service->weeksOfMonth($profil, $tahun, $bulan),
+            'mingguMagangIni' => $this->service->currentInternshipWeek($profil),
         ]);
     }
 
@@ -36,7 +43,7 @@ class LogbookController extends Controller
         $logbook = $this->service->create($request->validated());
 
         return redirect()
-            ->route('logbook.index')
+            ->route('logbook.index', ['bulan' => $logbook->tanggal->format('Y-m')])
             ->with('success', 'Logbook tanggal ' . WeekHelper::tanggalIndo($logbook->tanggal) . ' berhasil disimpan.');
     }
 
@@ -47,15 +54,18 @@ class LogbookController extends Controller
 
     public function update(LogbookRequest $request, Logbook $logbook)
     {
-        $this->service->update($logbook, $request->validated());
+        $logbook = $this->service->update($logbook, $request->validated());
 
-        return redirect()->route('logbook.index')->with('success', 'Logbook berhasil diperbarui.');
+        return redirect()
+            ->route('logbook.index', ['bulan' => $logbook->tanggal->format('Y-m')])
+            ->with('success', 'Logbook berhasil diperbarui.');
     }
 
     public function destroy(Logbook $logbook)
     {
+        $bulan = $logbook->tanggal->format('Y-m');
         $this->service->delete($logbook);
 
-        return redirect()->route('logbook.index')->with('success', 'Logbook berhasil dihapus.');
+        return redirect()->route('logbook.index', ['bulan' => $bulan])->with('success', 'Logbook berhasil dihapus.');
     }
 }

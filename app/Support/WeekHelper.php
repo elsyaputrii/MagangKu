@@ -90,6 +90,50 @@ class WeekHelper
         return max(1, self::weeksBetween(self::weekStart($mulai), self::weekStart($tanggal)) + 1);
     }
 
+    /** Ubah "YYYY-MM" menjadi [tahun, bulan]; bila kosong/tidak valid memakai bulan berjalan. */
+    public static function parseBulan(?string $bulan): array
+    {
+        if ($bulan && preg_match('/^(\d{4})-(0[1-9]|1[0-2])$/', $bulan, $m)) {
+            return [(int) $m[1], (int) $m[2]];
+        }
+
+        $sekarang = Carbon::now();
+
+        return [(int) $sekarang->format('Y'), (int) $sekarang->format('n')];
+    }
+
+    /**
+     * Rentang Senin-Jumat dari minggu yang memuat $tanggal, dipotong agar tidak keluar dari bulan $tanggal.
+     * Hasil: ['senin' => Carbon asli, 'mulai' => Carbon, 'selesai' => Carbon]
+     */
+    public static function weekRangeInMonth(CarbonInterface $tanggal): array
+    {
+        $senin      = self::weekStart($tanggal);
+        $awalBulan  = Carbon::parse($tanggal->format('Y-m-01'))->startOfDay();
+        $akhirBulan = $awalBulan->copy()->endOfMonth()->startOfDay();
+        $jumat      = self::weekEnd($senin);
+
+        return [
+            'senin'   => $senin,
+            'mulai'   => $senin->lt($awalBulan) ? $awalBulan : $senin,
+            'selesai' => $jumat->gt($akhirBulan) ? $akhirBulan : $jumat,
+        ];
+    }
+
+    /** Contoh: "02 – 06 November 2026" (kedua tanggal berada di bulan yang sama). */
+    public static function rentangIndo(CarbonInterface $mulai, CarbonInterface $selesai): string
+    {
+        if ($mulai->isSameDay($selesai)) {
+            return self::tanggalIndo($mulai);
+        }
+
+        if ($mulai->format('Y-m') === $selesai->format('Y-m')) {
+            return $mulai->format('d') . ' – ' . self::tanggalIndo($selesai);
+        }
+
+        return self::tanggalIndo($mulai) . ' – ' . self::tanggalIndo($selesai);
+    }
+
     public static function weeksBetween(CarbonInterface $a, CarbonInterface $b): int
     {
         return (int) round(($b->getTimestamp() - $a->getTimestamp()) / 604800);

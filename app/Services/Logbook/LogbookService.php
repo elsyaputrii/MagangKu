@@ -36,6 +36,48 @@ class LogbookService
             ->values();
     }
 
+    /**
+     * Daftar minggu (M1, M2, ...) pada satu bulan yang MEMILIKI data logbook, terbaru di atas.
+     *
+     * @return Collection<int, array{kode:string, nomor_bulan:int, nomor_magang:int, senin:Carbon, mulai:Carbon, selesai:Carbon, items:Collection}>
+     */
+    public function weeksOfMonth(Profile $profil, int $tahun, int $bulan): Collection
+    {
+        $items = Logbook::query()
+            ->whereYear('tanggal', $tahun)
+            ->whereMonth('tanggal', $bulan)
+            ->orderBy('tanggal')
+            ->get();
+
+        $acuan = $this->tanggalAcuan($profil, Logbook::query()->orderBy('tanggal')->limit(1)->get());
+
+        return $items
+            ->groupBy(fn (Logbook $l) => WeekHelper::weekOfMonth($l->tanggal))
+            ->map(function (Collection $grup, $nomor) use ($acuan) {
+                $rentang = WeekHelper::weekRangeInMonth($grup->first()->tanggal);
+
+                return [
+                    'kode'         => 'M' . $nomor,
+                    'nomor_bulan'  => (int) $nomor,
+                    'nomor_magang' => WeekHelper::internshipWeek($rentang['senin'], $acuan),
+                    'senin'        => $rentang['senin'],
+                    'mulai'        => $rentang['mulai'],
+                    'selesai'      => $rentang['selesai'],
+                    'items'        => $grup->sortBy('tanggal')->values(),
+                ];
+            })
+            ->sortByDesc(fn (array $minggu) => $minggu['senin']->timestamp)
+            ->values();
+    }
+
+    /** Nomor minggu magang untuk hari ini (badge "Minggu ke-N"). */
+    public function currentInternshipWeek(Profile $profil): int
+    {
+        $acuan = $this->tanggalAcuan($profil, Logbook::query()->orderBy('tanggal')->limit(1)->get());
+
+        return WeekHelper::internshipWeek(Carbon::today(), $acuan);
+    }
+
     /** Data satu minggu (untuk export), diidentifikasi dengan hari Senin. */
     public function week(Profile $profil, Carbon $senin): array
     {

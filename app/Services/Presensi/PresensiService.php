@@ -57,6 +57,31 @@ class PresensiService
         return $grid;
     }
 
+    /**
+     * Presensi satu bulan dikelompokkan per minggu (M1, M2, ...) - hanya minggu yang memiliki data, terbaru di atas.
+     *
+     * @return Collection<int, array{kode:string, nomor_bulan:int, senin:Carbon, mulai:Carbon, selesai:Carbon, items:Collection}>
+     */
+    public function groupedWeeks(Collection $records): Collection
+    {
+        return $records
+            ->groupBy(fn (Presensi $p) => WeekHelper::weekOfMonth($p->tanggal))
+            ->map(function (Collection $grup, $nomor) {
+                $rentang = WeekHelper::weekRangeInMonth($grup->first()->tanggal);
+
+                return [
+                    'kode'        => 'M' . $nomor,
+                    'nomor_bulan' => (int) $nomor,
+                    'senin'       => $rentang['senin'],
+                    'mulai'       => $rentang['mulai'],
+                    'selesai'     => $rentang['selesai'],
+                    'items'       => $grup->sortBy('tanggal')->values(),
+                ];
+            })
+            ->sortByDesc(fn (array $minggu) => $minggu['senin']->timestamp)
+            ->values();
+    }
+
     public function create(array $data): Presensi
     {
         $presensi = Presensi::create($this->normalisasi($data));
@@ -106,7 +131,9 @@ class PresensiService
         } else {
             $data['jam_datang'] = null;
             $data['jam_pulang'] = null;
-            $data['keterangan'] = isset($data['keterangan']) ? trim((string) $data['keterangan']) ?: null : null;
+
+            $keterangan = trim((string) ($data['keterangan'] ?? ''));
+            $data['keterangan'] = $keterangan !== '' ? $keterangan : null;
         }
 
         return $data;

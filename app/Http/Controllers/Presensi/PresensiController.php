@@ -21,11 +21,12 @@ class PresensiController extends Controller
         $records = $this->service->forMonth($tahun, $bulan);
 
         return view('presensi.index', [
-            'bulan'     => sprintf('%04d-%02d', $tahun, $bulan),
-            'namaBulan' => WeekHelper::namaBulan($bulan) . ' ' . $tahun,
-            'records'   => $records,
-            'grid'      => $this->service->weeklyGrid($records),
-            'romawi'    => WeekHelper::ROMAWI,
+            'bulan'      => sprintf('%04d-%02d', $tahun, $bulan),
+            'namaBulan'  => WeekHelper::namaBulan($bulan) . ' ' . $tahun,
+            'records'    => $records,
+            'grid'       => $this->service->weeklyGrid($records),
+            'mingguList' => $this->service->groupedWeeks($records),
+            'romawi'     => WeekHelper::ROMAWI,
         ]);
     }
 
