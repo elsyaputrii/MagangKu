@@ -3,59 +3,47 @@
 
 @section('content')
 @use('App\Support\WeekHelper')
-@php
-    // Minggu yang terbuka otomatis: minggu yang memuat hari ini, jika tidak ada maka minggu terbaru
-    $hariIni = \Carbon\Carbon::today();
-    $aktifIndex = $minggu->search(fn ($m) => $hariIni->between($m['mulai'], $m['selesai']->copy()->addDays(2)));
-    if ($aktifIndex === false) { $aktifIndex = 0; }
-    $aktif = $minggu->get($aktifIndex);
-@endphp
-
-<style>
-    .wk{border:1px solid var(--line);border-radius:var(--radius);background:#fff;margin-top:12px}
-    .wk > summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px}
-    .wk > summary::-webkit-details-marker{display:none}
-    .wk > summary:hover{background:#fafcff;border-radius:var(--radius)}
-    .wk-title{font-weight:700;font-size:1.02rem}
-    .wk-sub{color:var(--muted);font-size:.85rem;margin-top:3px}
-    .wk-hint{color:var(--muted);font-size:.8rem;margin-top:2px}
-    .wk[open] .wk-hint{display:none}
-    .wk .chev{width:20px;height:20px;flex:none;color:var(--muted);transition:transform .2s}
-    .wk[open] .chev{transform:rotate(180deg)}
-    .wk-body{border-top:1px solid var(--line);margin:0 18px;padding:12px 0 6px}
-    .wk-body .log-item:first-of-type{border-top:0}
-</style>
+@include('partials.week-accordion-style')
 
 <section class="card">
     <div class="card-head">
         <div>
             <h2>Logbook Magang</h2>
-            <div class="muted small">Kegiatan dikelompokkan per minggu. Klik minggu untuk membuka atau menutup.</div>
+            <div class="muted small">Pilih bulan lalu tekan Tampilkan. Klik minggu untuk membuka atau menutup.</div>
         </div>
         <div class="actions">
-            @if ($aktif)<span class="badge ok">Minggu ke-{{ $aktif['nomor'] }}</span>@endif
+            <span class="badge ok">Minggu ke-{{ $mingguMagangIni }}</span>
             <a class="btn btn-primary btn-sm" href="{{ route('logbook.create') }}">@include('partials.icon', ['name' => 'plus']) Tambah kegiatan</a>
         </div>
     </div>
 
+    <form method="GET" action="{{ route('logbook.index') }}" class="filters">
+        <div class="field">
+            <label>Periode</label>
+            @include('partials.month-picker', ['name' => 'bulan', 'value' => $bulan])
+        </div>
+        <button class="btn btn-primary" type="submit">Tampilkan</button>
+    </form>
+
     @forelse ($minggu as $i => $m)
-        <details class="wk" @if ($i === $aktifIndex) open @endif>
+        <details class="acc" @if ($i === 0) open @endif>
             <summary>
                 <div>
-                    <div class="wk-title">Minggu {{ $m['nomor'] }}</div>
-                    <div class="wk-sub">
-                        {{ WeekHelper::tanggalIndo($m['mulai']) }} – {{ WeekHelper::tanggalIndo($m['selesai']) }}
+                    <div class="acc-title">{{ $m['kode'] }}</div>
+                    <div class="acc-sub">
+                        {{ WeekHelper::rentangIndo($m['mulai'], $m['selesai']) }}
+                        · Minggu magang ke-{{ $m['nomor_magang'] }}
                         · <span class="badge">{{ $m['items']->count() }} kegiatan</span>
                     </div>
-                    <div class="wk-hint">Klik untuk melihat logbook minggu {{ $m['nomor'] }}</div>
+                    <div class="acc-hint">Klik untuk melihat logbook {{ $m['kode'] }}</div>
                 </div>
                 <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
             </summary>
 
-            <div class="wk-body">
+            <div class="acc-body">
                 <div class="actions" style="margin-bottom:6px">
-                    <a class="btn btn-word btn-sm" href="{{ route('logbook.export.word', ['minggu' => $m['mulai']->toDateString()]) }}">@include('partials.icon', ['name' => 'file']) Unduh Word</a>
-                    <a class="btn btn-pdf btn-sm" href="{{ route('logbook.export.pdf', ['minggu' => $m['mulai']->toDateString()]) }}">@include('partials.icon', ['name' => 'file']) Unduh PDF</a>
+                    <a class="btn btn-word btn-sm" href="{{ route('logbook.export.word', ['minggu' => $m['senin']->toDateString()]) }}">@include('partials.icon', ['name' => 'file']) Unduh Word</a>
+                    <a class="btn btn-pdf btn-sm" href="{{ route('logbook.export.pdf', ['minggu' => $m['senin']->toDateString()]) }}">@include('partials.icon', ['name' => 'file']) Unduh PDF</a>
                 </div>
 
                 @foreach ($m['items'] as $l)
@@ -78,7 +66,7 @@
             </div>
         </details>
     @empty
-        <div class="empty">Belum ada logbook. <a href="{{ route('logbook.create') }}">Tambah kegiatan pertama</a></div>
+        <div class="empty">Belum Ada Data Logbook pada periode ini</div>
     @endforelse
 </section>
 @endsection
